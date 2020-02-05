@@ -102,7 +102,7 @@ namespace Remotely.Server
 
 
             var trustedOrigins = Configuration.GetSection("ApplicationOptions:TrustedCorsOrigins").Get<string[]>();
-
+            
             if (trustedOrigins != null)
             {
                 services.AddCors(options =>
@@ -169,11 +169,11 @@ namespace Remotely.Server
             else
             {
                 app.UseExceptionHandler("/Error");
-                if (bool.Parse(Configuration["ApplicationOptions:UseHSTS"]))
+                if (bool.Parse(Configuration["ApplicationOptions:UseHsts"]))
                 {
                     app.UseHsts();
                 }
-                if (bool.Parse(Configuration["ApplicationOptions:RedirectToHTTPS"]))
+                if (bool.Parse(Configuration["ApplicationOptions:RedirectToHttps"]))
                 {
                     app.UseHttpsRedirection();
                 }
@@ -185,7 +185,7 @@ namespace Remotely.Server
 
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
-                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+                ForwardedHeaders = ForwardedHeaders.All
             });
 
             app.UseSwagger();
@@ -201,6 +201,7 @@ namespace Remotely.Server
 
             app.UseAuthorization();
 
+            app.UseCors("TrustedOriginPolicy");
 
             app.UseEndpoints(routeBuilder =>
             {
@@ -229,8 +230,6 @@ namespace Remotely.Server
                 routeBuilder.MapControllers();
                 
             });
-
-            app.UseCors("TrustedOriginPolicy");
 
             try
             {

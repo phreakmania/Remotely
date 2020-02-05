@@ -18,7 +18,8 @@ using Remotely.Server.Services;
 namespace Remotely.Server.API
 {
     [Route("api/[controller]")]
-    public class RemoteControlController : Controller
+    [ApiController]
+    public class RemoteControlController : ControllerBase
     {
         public RemoteControlController(DataService dataService, IHubContext<DeviceSocketHub> deviceHub, ApplicationConfig appConfig, SignInManager<RemotelyUser> signInManager)
         {
@@ -81,7 +82,7 @@ namespace Remotely.Server.API
             {
                 if (DataService.DoesUserHaveAccessToDevice(targetDevice.Value.ID, remotelyUser))
                 {
-                    var currentUsers = RCBrowserSocketHub.OrganizationConnectionList.Count(x => x.Value.OrganizationID == remotelyUser.OrganizationID);
+                    var currentUsers = RCDeviceSocketHub.SessionInfoList.Count(x => x.Value.OrganizationID == remotelyUser.OrganizationID);
                     if (currentUsers >= AppConfig.RemoteControlSessionLimit)
                     {
                         return BadRequest("There are already the maximum amount of active remote control sessions for your organization.");
@@ -100,7 +101,7 @@ namespace Remotely.Server.API
 
                     if (!RCDeviceSocketHub.SessionInfoList.Values.Any(x => x.DeviceID == targetDevice.Value.ID && !existingSessions.Any(y => y.Key != x.RCSocketID)))
                     {
-                        return StatusCode(500, "The remote control process failed to start in time on the remote device.");
+                        return StatusCode(408, "The remote control process failed to start in time on the remote device.");
                     }
                     else
                     {

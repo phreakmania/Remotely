@@ -11,6 +11,9 @@ using Remotely.ScreenCast.Win.Services;
 using Remotely.ScreenCast.Core.Interfaces;
 using Remotely.ScreenCast.Win.Capture;
 using Remotely.ScreenCast.Core.Communication;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System.Windows.Forms;
 
 namespace Remotely.ScreenCast.Win
 {
@@ -18,6 +21,7 @@ namespace Remotely.ScreenCast.Win
 	{
         public static Conductor Conductor { get; private set; }
         public static CursorIconWatcher CursorIconWatcher { get; private set; }
+        public static IServiceProvider Services => ServiceContainer.Instance;
 
         private static string CurrentDesktopName { get; set;
         }
@@ -34,46 +38,69 @@ namespace Remotely.ScreenCast.Win
             try
             {
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-                CursorIconWatcher = new CursorIconWatcher(Conductor);
-                var screenCaster = new WinScreenCaster(CursorIconWatcher);
-                var clipboardService = new WinClipboardService();
-                var casterSocket = new CasterSocket(new WinInput(), screenCaster, new WinAudioCapturer(), clipboardService);
-                Conductor = new Conductor(casterSocket, screenCaster);
+
+                BuildServices();
+
+                Conductor = Services.GetRequiredService<Conductor>();
                 Conductor.ProcessArgs(args);
 
-                Conductor.Connect().ContinueWith(async (task) =>
+                if (Conductor.Mode == Core.Enums.AppMode.Chat)
                 {
-                    await Conductor.CasterSocket.SendDeviceInfo(Conductor.ServiceID, Environment.MachineName, Conductor.DeviceID);
-                    if (Win32Interop.GetCurrentDesktop(out var currentDesktopName))
-                    {
-                        Logger.Write($"Setting initial desktop to {currentDesktopName}.");
-                        if (Win32Interop.SwitchToInputDesktop())
-                        {
-                            CurrentDesktopName = currentDesktopName;
-                        }
-                        else
-                        {
-                            Logger.Write("Failed to set initial desktop.");
-                        }
-                    }
-                    else
-                    {
-                        Logger.Write("Failed to get initial desktop name.");
-                    }
-                    await CheckForRelaunch();
-                    Conductor.IdleTimer = new IdleTimer(Conductor.Viewers);
-                    Conductor.IdleTimer.Start();
-                    CursorIconWatcher.OnChange += CursorIconWatcher_OnChange;
-                    clipboardService.BeginWatching();
-                });
-               
-                Thread.Sleep(Timeout.Infinite);
+                    Services.GetRequiredService<ChatHostService>().StartChat(Conductor.RequesterID).Wait();
+                }
+                else
+                {
+                    StartScreenCasting();
+                }
+
             }
             catch (Exception ex)
             {
                 Logger.Write(ex);
                 throw;
             }
+        }
+
+        private static void BuildServices()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddLogging(builder =>
+            {
+                builder.AddConsole().AddEventLog();
+            });
+
+            serviceCollection.AddSingleton<CursorIconWatcher>();
+            serviceCollection.AddSingleton<IScreenCaster, WinScreenCaster>();
+            serviceCollection.AddSingleton<IKeyboardMouseInput, WinInput>();
+            serviceCollection.AddSingleton<IClipboardService, WinClipboardService>();
+            serviceCollection.AddSingleton<IAudioCapturer, WinAudioCapturer>();
+            serviceCollection.AddSingleton<CasterSocket>();
+            serviceCollection.AddSingleton<IdleTimer>();
+            serviceCollection.AddSingleton<Conductor>();
+            serviceCollection.AddSingleton<ChatHostService>();
+            serviceCollection.AddTransient<ICapturer>(provider =>
+            {
+                try
+                {
+                    var dxCapture = new DXCapture();
+                    if (dxCapture.GetScreenCount() == Screen.AllScreens.Length)
+                    {
+                        return dxCapture;
+                    }
+                    else
+                    {
+                        Logger.Write("DX screen count doesn't match.  Using CPU capturer instead.");
+                        dxCapture.Dispose();
+                        return new BitBltCapture();
+                    }
+                }
+                catch
+                {
+                    return new BitBltCapture();
+                }
+            });
+
+            ServiceContainer.Instance = serviceCollection.BuildServiceProvider();
         }
 
         private static async Task CheckForRelaunch()
@@ -97,5 +124,36 @@ namespace Remotely.ScreenCast.Win
             Logger.Write((Exception)e.ExceptionObject);
         }
 
+        private static void StartScreenCasting()
+        {
+            CursorIconWatcher = Services.GetRequiredService<CursorIconWatcher>();
+
+            Conductor.Connect().ContinueWith(async (task) =>
+            {
+                await Conductor.CasterSocket.SendDeviceInfo(Conductor.ServiceID, Environment.MachineName, Conductor.DeviceID);
+                if (Win32Interop.GetCurrentDesktop(out var currentDesktopName))
+                {
+                    Logger.Write($"Setting initial desktop to {currentDesktopName}.");
+                    if (Win32Interop.SwitchToInputDesktop())
+                    {
+                        CurrentDesktopName = currentDesktopName;
+                    }
+                    else
+                    {
+                        Logger.Write("Failed to set initial desktop.");
+                    }
+                }
+                else
+                {
+                    Logger.Write("Failed to get initial desktop name.");
+                }
+                await CheckForRelaunch();
+                Services.GetRequiredService<IdleTimer>().Start();
+                CursorIconWatcher.OnChange += CursorIconWatcher_OnChange;
+                Services.GetRequiredService<IClipboardService>().BeginWatching();
+            });
+
+            Thread.Sleep(Timeout.Infinite);
+        }
     }
 }

@@ -13,15 +13,10 @@ namespace Remotely.ScreenCast.Core
 {
     public class Conductor
     {
-        public static Conductor Current { get; private set; }
-        public IScreenCaster ScreenCaster { get; }
         public bool IsDebug { get; }
 
-        public Conductor(CasterSocket casterSocket,
-            IScreenCaster screenCaster)
+        public Conductor(CasterSocket casterSocket)
         {
-            Current = this;
-            ScreenCaster = screenCaster;
             CasterSocket = casterSocket;
 #if DEBUG
             IsDebug = true;
@@ -38,7 +33,6 @@ namespace Remotely.ScreenCast.Core
         public CasterSocket CasterSocket { get; private set; }
         public string DeviceID { get; private set; }
         public string Host { get; private set; }
-        public IdleTimer IdleTimer { get; set; }
         public AppMode Mode { get; private set; }
         public string RequesterID { get; private set; }
         public string ServiceID { get; private set; }
@@ -67,12 +61,20 @@ namespace Remotely.ScreenCast.Core
 
             }
 
-            Mode = (AppMode)Enum.Parse(typeof(AppMode), ArgDict["mode"]);
-            Host = ArgDict["host"];
+            Mode = (AppMode)Enum.Parse(typeof(AppMode), ArgDict["mode"], true);
+
+            if (Mode == AppMode.Normal || Mode == AppMode.Unattended)
+            {
+                Host = ArgDict["host"];
+            }
+
+            if (Mode == AppMode.Chat || Mode == AppMode.Unattended)
+            {
+                RequesterID = ArgDict["requester"];
+            }
 
             if (Mode == AppMode.Unattended)
             {
-                RequesterID = ArgDict["requester"];
                 ServiceID = ArgDict["serviceid"];
                 DeviceID = ArgDict["deviceid"];
             }

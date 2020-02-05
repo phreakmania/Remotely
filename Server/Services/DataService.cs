@@ -129,6 +129,7 @@ namespace Remotely.Server.Services
             RemotelyContext.SaveChanges();
             return true;
         }
+
         public string AddSharedFile(IFormFile file, string organizationID)
         {
             var expirationDate = DateTime.Now.AddDays(-AppConfig.DataRetentionInDays);
@@ -209,6 +210,7 @@ namespace Remotely.Server.Services
             RemotelyContext.DeviceGroups.Remove(deviceGroup);
             RemotelyContext.SaveChanges();
         }
+
         public void DeleteInvite(string requesterUserName, string inviteID)
         {
             var requester = RemotelyContext.Users
@@ -277,6 +279,7 @@ namespace Remotely.Server.Services
                 .Where(x => x.OrganizationID == orgID)
                 .OrderByDescending(x => x.TimeStamp);
         }
+
         public IEnumerable<Device> GetAllDevicesForUser(string userID)
         {
             var user = RemotelyContext.Users.FirstOrDefault(x => x.Id == userID);
@@ -294,6 +297,7 @@ namespace Remotely.Server.Services
                 .Where(x => x.OrganizationID == orgID)
                 .OrderByDescending(x => x.TimeStamp);
         }
+
         public ICollection<InviteLink> GetAllInviteLinks(string userName)
         {
             return RemotelyContext.Users
@@ -334,6 +338,11 @@ namespace Remotely.Server.Services
         public string GetDefaultPrompt()
         {
             return AppConfig.DefaultPrompt;
+        }
+
+        public int GetDeviceCount()
+        {
+            return RemotelyContext.Devices.Count();
         }
 
         public Device GetDeviceForUser(string userID, string deviceID)
@@ -458,6 +467,19 @@ namespace Remotely.Server.Services
             RemotelyContext.SaveChanges();
         }
 
+        public void SetDeviceSetupOptions(string deviceID, DeviceSetupOptions options)
+        {
+            var device = RemotelyContext.Devices.FirstOrDefault(x => x.ID == deviceID);
+            if (device != null)
+            {
+                device.Alias = options.DeviceAlias;
+                var group = RemotelyContext.DeviceGroups.FirstOrDefault(x => 
+                    x.Name.ToLower() == options.DeviceGroup.ToLower() &&
+                    x.OrganizationID == device.OrganizationID);
+                device.DeviceGroup = group;
+                RemotelyContext.SaveChanges();
+            }
+        }
         public void SetServerVerificationToken(string deviceID, string verificationToken)
         {
             var device = RemotelyContext.Devices.Find(deviceID);

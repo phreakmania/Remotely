@@ -19,6 +19,10 @@ using System.Windows.Input;
 using Remotely.ScreenCast.Win.Services;
 using Remotely.ScreenCast.Core.Interfaces;
 using Remotely.ScreenCast.Core.Communication;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Remotely.Shared.Win32;
+using Screen = System.Windows.Forms.Screen;
 
 namespace Remotely.Desktop.Win.ViewModels
 {
@@ -30,15 +34,12 @@ namespace Remotely.Desktop.Win.ViewModels
         {
             Current = this;
 
-            CursorIconWatcher = new CursorIconWatcher(Conductor);
+            BuildServices();
+
+            CursorIconWatcher = Services.GetRequiredService<CursorIconWatcher>();
             CursorIconWatcher.OnChange += CursorIconWatcher_OnChange;
-
-            var screenCaster = new WinScreenCaster(CursorIconWatcher);
-            var clipboardService = new WinClipboardService();
-            clipboardService.BeginWatching();
-            var casterSocket = new CasterSocket(new WinInput(), screenCaster, new WinAudioCapturer(), clipboardService);
-            Conductor = new Conductor(casterSocket, screenCaster);
-
+            Services.GetRequiredService<IClipboardService>().BeginWatching();
+            Conductor = Services.GetRequiredService<Conductor>();
             Conductor.SessionIDChanged += SessionIDChanged;
             Conductor.ViewerRemoved += ViewerRemoved;
             Conductor.ViewerAdded += ViewerAdded;
@@ -46,6 +47,7 @@ namespace Remotely.Desktop.Win.ViewModels
         }
 
         public static MainWindowViewModel Current { get; private set; }
+        public static IServiceProvider Services => ServiceContainer.Instance;
 
         public ICommand ChangeServerCommand
         {
@@ -72,7 +74,6 @@ namespace Remotely.Desktop.Win.ViewModels
 
 
         public Conductor Conductor { get; }
-
         public CursorIconWatcher CursorIconWatcher { get; private set; }
 
         public string Host
@@ -93,9 +94,10 @@ namespace Remotely.Desktop.Win.ViewModels
             {
                 return new Executor(async (param) =>
                 {
-                    foreach (Viewer viewer in (param as IList<object>))
+                    foreach (Viewer viewer in (param as IList<object>).ToArray())
                     {
                         viewer.DisconnectRequested = true;
+                        ViewerRemoved(this, viewer.ViewerConnectionID);
                         await Conductor.CasterSocket.SendViewerRemoved(viewer.ViewerConnectionID);
                     }
                 },
@@ -107,7 +109,7 @@ namespace Remotely.Desktop.Win.ViewModels
 
         }
 
-        public ICommand RestartAsAdminCommand
+        public ICommand ElevateToAdminCommand
         {
             get
             {
@@ -115,7 +117,8 @@ namespace Remotely.Desktop.Win.ViewModels
                 {
                     try
                     {
-                        var psi = new ProcessStartInfo(Assembly.GetExecutingAssembly().Location);
+                        var commandLine = Win32Interop.GetCommandLine().Trim(" -elevate".ToCharArray()).Trim('"');
+                        var psi = new ProcessStartInfo(commandLine);
                         psi.Verb = "RunAs";
                         Process.Start(psi);
                         Environment.Exit(0);
@@ -125,6 +128,37 @@ namespace Remotely.Desktop.Win.ViewModels
                 }, (param) =>
                 {
                     return !IsAdministrator;
+                });
+            }
+        }
+
+        public ICommand ElevateToServiceCommand
+        {
+            get
+            {
+                return new Executor((param) =>
+                {
+                    try
+                    {
+                        var psi = new ProcessStartInfo("cmd.exe")
+                        {
+                            WindowStyle = ProcessWindowStyle.Hidden,
+                            CreateNoWindow = true
+                        };
+                        var commandLine = Win32Interop.GetCommandLine().Replace(" -elevate", "").Replace("\"", "");
+                        Logger.Write($"Creating temporary service with command line {commandLine}.");
+                        psi.Arguments = $"/c sc create Remotely_Temp binPath=\"{commandLine} -elevate\"";
+                        Process.Start(psi).WaitForExit();
+                        psi.Arguments = "/c sc start Remotely_Temp";
+                        Process.Start(psi).WaitForExit();
+                        psi.Arguments = "/c sc delete Remotely_Temp";
+                        Process.Start(psi).WaitForExit();
+                        App.Current.Shutdown();
+                    }
+                    catch { }
+                }, (param) =>
+                {
+                    return IsAdministrator && !WindowsIdentity.GetCurrent().IsSystem;
                 });
             }
         }
@@ -140,7 +174,6 @@ namespace Remotely.Desktop.Win.ViewModels
         }
 
         public ObservableCollection<Viewer> Viewers { get; } = new ObservableCollection<Viewer>();
-
         public void CopyLink()
         {
             Clipboard.SetText($"{Host}/RemoteControl?sessionID={SessionID?.Replace(" ", "")}");
@@ -198,6 +231,46 @@ namespace Remotely.Desktop.Win.ViewModels
             }
         }
 
+        private static void BuildServices()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddLogging(builder =>
+            {
+                builder.AddConsole().AddEventLog();
+            });
+
+            serviceCollection.AddSingleton<CursorIconWatcher>();
+            serviceCollection.AddSingleton<IScreenCaster, WinScreenCaster>();
+            serviceCollection.AddSingleton<IKeyboardMouseInput, WinInput>();
+            serviceCollection.AddSingleton<IClipboardService, WinClipboardService>();
+            serviceCollection.AddSingleton<IAudioCapturer, WinAudioCapturer>();
+            serviceCollection.AddSingleton<CasterSocket>();
+            serviceCollection.AddSingleton<IdleTimer>();
+            serviceCollection.AddSingleton<Conductor>();
+            serviceCollection.AddTransient<ICapturer>(provider => {
+                try
+                {
+                    var dxCapture = new DXCapture();
+                    if (dxCapture.GetScreenCount() == Screen.AllScreens.Length)
+                    {
+                        return dxCapture;
+                    }
+                    else
+                    {
+                        Logger.Write("DX screen count doesn't match.  Using CPU capturer instead.");
+                        dxCapture.Dispose();
+                        return new BitBltCapture();
+                    }
+                }
+                catch
+                {
+                    return new BitBltCapture();
+                }
+            });
+
+
+            ServiceContainer.Instance = serviceCollection.BuildServiceProvider();
+        }
         private async void CursorIconWatcher_OnChange(object sender, CursorInfo cursor)
         {
             if (Conductor?.CasterSocket != null && Conductor?.Viewers?.Count > 0)
@@ -217,7 +290,7 @@ namespace Remotely.Desktop.Win.ViewModels
                     Task.Run(async () =>
                     {
                         await Conductor.CasterSocket.SendCursorChange(CursorIconWatcher.GetCurrentCursor(), new List<string>() { screenCastRequest.ViewerID });
-                        _ = Conductor.ScreenCaster.BeginScreenCasting(screenCastRequest);
+                        _ = Services.GetRequiredService<IScreenCaster>().BeginScreenCasting(screenCastRequest);
                     });
                 }
             });
@@ -248,6 +321,7 @@ namespace Remotely.Desktop.Win.ViewModels
                 if (viewer != null)
                 {
                     Viewers.Remove(viewer);
+                    viewer.Dispose();
                 }
             });
         }
