@@ -1,0 +1,112 @@
+﻿body {
+
+}
+
+hr {
+    border-top: 1px solid #282828;
+}
+
+.console-prompt {
+    color: slategray;
+}
+
+.console-output {
+    color: forestgreen;
+}
+
+table, .table {
+    color: #303030;
+}
+
+.table tbody tr td {
+    padding: .5rem;
+    font-size: 14px;
+}
+
+
+.navbar .navbar-header .navbar-brand {
+    color: white;
+}
+
+.navbar .btn {
+    font-size: unset !important;
+}
+
+button.navbar-toggler:hover {
+    background-color: rgb(100,100,100);
+    transition: .2s background-color ease;
+}
+
+.logo-subtitle {
+    color: lightgray;
+    font-weight: 400;
+    font-size: .7em;
+}
+
+.table-hover > tbody > .record-row.row-selected {
+    color: #008cba;
+}
+
+#consoleStatusDiv select {
+    background-color: transparent;
+}
+
+.console-status-value {
+    color: #008cba;
+}
+
+#qrCode img {
+    border-color: white;
+}
+.help-wrapper {
+    color: rgb(20,20,20);
+}
+
+.extended-help {
+    color: gray;
+}
+
+.console-input-prompt {
+    color: slategray;
+}
+
+.console-input-prompt select {
+    background-color: transparent;
+}
+
+.console-block textarea {
+    background-color: transparent;
+    color: rgb(20,20,20);
+}
+.echo-input {
+    color:gray;
+}
+.device-tag {
+    color: black;
+}
+
+#commandCompletionDiv {
+    color: rgb(20,20,20);
+    background-color: whitesmoke;
+}
+#commandInfoDiv {
+    color: rgb(20,20,20);
+    background-color: whitesmoke;
+}
+
+.command-completion-item.selected {
+    background-color: rgba(20,20,20,0.2);
+}
+.command-completion-item:hover {
+    background-color: rgba(20,20,20,0.2);
+}
+.command-harness-title {
+    color: rgb(20,20,20);
+}
+.fa-check-circle {
+    color: forestgreen;
+}
+
+.fa-times {
+    color: red;
+}
