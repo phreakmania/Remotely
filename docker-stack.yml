@@ -1,0 +1,25 @@
+version: "3.7"
+
+services:
+  reverseproxy:
+    image: remotely-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    deploy:
+      mode: replicated
+      replicas: 1
+    networks: 
+        - remotely
+  api:
+    image: remotely-server
+    expose:
+      - "80"
+      - "443"
+    deploy:
+      mode: replicated
+      replicas: 1
+    networks: 
+        - remotely
+networks:
+    remotely:

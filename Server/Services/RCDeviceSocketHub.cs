@@ -125,7 +125,6 @@ namespace Remotely.Server.Services
                 StartTime = DateTime.Now
             };
             SessionInfoList.AddOrUpdate(Context.ConnectionId, SessionInfo, (id, si) => SessionInfo);
-
             await base.OnConnectedAsync();
         }
         public override async Task OnDisconnectedAsync(Exception exception)

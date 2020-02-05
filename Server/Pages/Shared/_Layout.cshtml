@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=550, user-scalable=no" />
     <link rel="icon" href="~/favicon.ico" />
-    <title>@ViewData["Title"] - Remotely</title>
+    <title>@ViewData["Title"] - AvP Quick Support</title>
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="description" content="Remote access tools designed to get things done quickly." />
@@ -44,33 +44,26 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-dark bg-primary navbar-expand-sm navbar-toggleable-sm mb-3">
+        <nav class="navbar border-bottom border-primary navbar-expand-sm navbar-toggleable-sm mb-3">
             <div class="container">
                 <a class="navbar-brand" asp-area="" asp-page="/Index">
-                    <div>
-                        Remotely
-                        <small>
-                            <span class="badge badge-info align-top">Beta</span>
-                        </small>
-                    </div>
-                    <div class="logo-subtitle">Do IT Remotely</div>
+                    <img src="~/images/logo.png" class="d-inline-block align-top" />
                 </a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
                     <partial name="_LoginPartial" />
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Index">Home</a>
+                            <a class="nav-link" asp-area="" asp-page="/Index"> AvP Quick Support</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Agents">Downloads</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/RemoteControl">Remote Control</a>
-                        </li>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            @*<li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-page="/Authenticated">Übersicht</a>
+                                </li>*@
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-page="/RemoteControl">Remote Control</a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
@@ -78,18 +71,20 @@
     </header>
 
     <div class="container">
-        <partial name="_CookieConsentPartial" />
         <main role="main">
-            @RenderBody()
+            <div class="container">
+                @RenderBody()
+                <partial name="_CookieConsentPartial" />
+            </div>
         </main>
     </div>
     <footer class="footer text-muted">
         <div class="container">
             <hr />
             <div class="footer-wrapper">
-                <p>&copy; @DateTime.Now.Year - Translucency Software</p>
+                <p>&copy; @DateTime.Now.Year - AvP IT GmbH</p>
                 <p class="text-right">
-                    <a asp-page="/About">About Remotely</a> - <a asp-area="" asp-page="/Privacy">Privacy</a>
+                    <a href="https://www.avp.de/impressum.html" target="_blank">Impressum</a> - <a href="https://www.avp.de/datenschutz.html" target="_blank">Datenschutzerklärung</a>
                 </p>
             </div>
         </div>

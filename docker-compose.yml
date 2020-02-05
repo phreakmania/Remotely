@@ -1,0 +1,27 @@
+version: "3.7"
+
+services:
+  reverseproxy:
+    build:
+      context: .\Nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: always
+    networks: 
+        - remotely
+  api:
+    depends_on:
+      - reverseproxy
+    build:
+      context: .\
+      dockerfile: Dockerfile
+    expose:
+      - "80"
+      - "443"
+    restart: always
+    networks: 
+        - remotely
+networks:
+    remotely:

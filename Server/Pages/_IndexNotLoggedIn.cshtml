@@ -1,19 +1,22 @@
 ﻿@inject Remotely.Server.Services.ApplicationConfig AppConfig
 @inject Remotely.Server.Services.DataService DataService
-@model IndexModel
-@{ 
-    var organizationCount = DataService.GetOrganizationCount();
-}
+@model AuthenticatedModel
+@{ var organizationCount = DataService.GetOrganizationCount(); }
 <div class="console">
     <div id="consoleOutputDiv">
         <div class="console-block">
             <div class="console-prompt">@Model.DefaultPrompt</div>
-            <div class="console-output">Authentication required.</div>
+            <div class="console-output"></div>
         </div>
 
         <div class="console-block">
             <div class="console-prompt">@Model.DefaultPrompt</div>
-            <div class="console-output">Please log in or register.</div>
+            <div class="console-output">Authentifizierung erforderlich.</div>
+        </div>
+
+        <div class="console-block">
+            <div class="console-prompt">@Model.DefaultPrompt</div>
+            <div class="console-output">Bitte melden Sie sich an oder registrieren Sie sich.</div>
         </div>
         <br />
         <br />
@@ -21,14 +24,14 @@
         <div class="text-center">
             <div class="login-frame">
                 <a href="~/Identity/Account/Login" class="btn btn-primary btn-lg login-button">
-                    Login
+                    Anmelden
                 </a>
                 @if (organizationCount < 0 || organizationCount < AppConfig.MaxOrganizationCount)
                 {
                     <br />
                     <br />
                     <a href="~/Identity/Account/Register" class="btn btn-secondary btn-lg login-button">
-                        Register
+                        Registrieren
                     </a>
                 }
             </div>

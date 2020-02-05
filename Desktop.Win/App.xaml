@@ -5,11 +5,11 @@
              StartupUri="MainWindow.xaml" DispatcherUnhandledException="Application_DispatcherUnhandledException">
     <Application.Resources>
         <Style x:Key="TitlebarButton" TargetType="Button">
-            <Setter Property="Background" Value="#FF464646"></Setter>
+            <Setter Property="Background" Value="White"></Setter>
             <Setter Property="DockPanel.Dock" Value="Right"></Setter>
             <Setter Property="HorizontalAlignment" Value="Right"></Setter>
             <Setter Property="BorderBrush" Value="{x:Null}"></Setter>
-            <Setter Property="Foreground" Value="White"></Setter>
+            <Setter Property="Foreground" Value="#284678"></Setter>
             <Setter Property="FontWeight" Value="Bold"></Setter>
             <Setter Property="Height" Value="30"></Setter>
             <Setter Property="Width" Value="30"></Setter>

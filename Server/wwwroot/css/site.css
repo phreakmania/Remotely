@@ -249,3 +249,7 @@ span.label.code {
         transform: translate(-50%, calc(-100% - 25px));
     }
 }
+
+.alert-primary {
+    background: #284678;
+}

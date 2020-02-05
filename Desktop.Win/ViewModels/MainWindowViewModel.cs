@@ -59,6 +59,18 @@ namespace Remotely.Desktop.Win.ViewModels
             }
         }
 
+        public ICommand ReloadCommand
+        {
+            get
+            {
+                return new Executor(async (param) =>
+                {
+                    await Init();
+                });
+            }
+        }
+
+
         public Conductor Conductor { get; }
 
         public CursorIconWatcher CursorIconWatcher { get; private set; }
@@ -136,7 +148,7 @@ namespace Remotely.Desktop.Win.ViewModels
 
         public async Task Init()
         {
-            SessionID = "Retrieving...";
+            SessionID = "Wird geladen...";
 
             var config = Config.GetConfig();
             Host = config.Host;

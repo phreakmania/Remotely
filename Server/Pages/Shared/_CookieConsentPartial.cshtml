@@ -8,18 +8,23 @@
 
 @if (showBanner)
 {
-    <div id="cookieConsent" class="alert alert-info alert-dismissible fade show" role="alert">
-        This site uses cookies for security and login. <a asp-page="/Privacy">Learn More</a>.
-        <button type="button" class="accept-policy close" data-dismiss="alert" aria-label="Close" data-cookie-string="@cookieString">
-            <span aria-hidden="true">Accept</span>
-        </button>
+    <div class="row mb-3">
+        <div id="cookieConsent" class="alert alert-info alert-dismissible fade show" role="alert">
+            Wir verwenden Cookies, die notwendig sind um die Funktionalität unserer Webseite zu gewährleisten.
+            Durch Ihre nachfolgende Einwilligung, auch Analyse-Cookies speichern zu dürfen, helfen Sie uns unsere Webseite fortlaufend zu verbessern.
+            Weitere Informationen dazu finden Sie in unserer <a href="https://www.avp.de/datenschutz.html" class="text-body" target="_blank">Datenschutzerklärung</a>.<br /><br />
+            <button type="button" class="btn btn-sm btn-primary" data-dismiss="alert" aria-label="Close" data-cookie-string="@cookieString">Akzeptieren</button>
+            <button type="button" class="accept-policy close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">X</span>
+            </button>
+        </div>
+        <script>
+            (function () {
+                var button = document.querySelector("#cookieConsent button[data-cookie-string]");
+                button.addEventListener("click", function (event) {
+                    document.cookie = button.dataset.cookieString;
+                }, false);
+            })();
+        </script>
     </div>
-    <script>
-        (function () {
-            var button = document.querySelector("#cookieConsent button[data-cookie-string]");
-            button.addEventListener("click", function (event) {
-                document.cookie = button.dataset.cookieString;
-            }, false);
-        })();
-    </script>
 }

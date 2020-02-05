@@ -12,20 +12,20 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=0.9" />
     <link rel="icon" href="~/favicon.ico" />
-    <title>Remotely Remote Control</title>
+    <title>AvP QuickSupport</title>
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <link href="~/manifest-rc.json" rel="manifest" />
     <meta name="description" content="Remote access tools designed to get things done quickly." />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    @if (AppConfig.Theme.ToLower() == "light")
+    @*@if (AppConfig.Theme.ToLower() == "light")
     {
         <link href="~/css/remote-control-light.css" rel="stylesheet" asp-append-version="true" />
     }
     else
-    {
+    {*@
         <link href="~/css/remote-control-dark.css" rel="stylesheet" asp-append-version="true" />
-    }
+@*    }*@
     <link href="~/lib/fontawesome/css/all.min.css" rel="stylesheet" />
 
     <environment include="Development">
@@ -46,9 +46,8 @@
 <body>
     <div class="remotely-header" title="Remotely">
         <div class="logo-title">
-            Remotely
+            AvP QuickSupport
         </div>
-        <div class="logo-subtitle">Do IT Remotely</div>
     </div>
 
     <button id="menuButton">
@@ -56,30 +55,29 @@
     </button>
 
     <div id="menuFrame">
-
         <div class="menu-options-header">
-            Actions
+            Aktionen
         </div>
 
         <div>
-            <button id="clipboardTransferButton" class="option-button">Clipboard  <i class="fas fa-clipboard"></i></button>
-            <button id="inviteButton" class="option-button">Invite Others  <i class="fas fa-user-plus"></i></button>
+            <button id="clipboardTransferButton" class="option-button">Zwischenablage  <i class="fas fa-clipboard"></i></button>
+            <button id="inviteButton" class="option-button">Weitere einladen  <i class="fas fa-user-plus"></i></button>
             <button id="audioButton" class="option-button">Audio <i class="fas fa-volume-up"></i></button>
-            <button id="fileTransferButton" class="option-button">File Transfer  <i class="fas fa-file-upload"></i></button>
-            <button id="ctrlAltDelButton" class="option-button">Ctrl+Alt+Del <i class="fas fa-sign-in-alt"></i></button>
-            <button id="keyboardButton" hidden="hidden" class="option-button">Keyboard  <i class="fas fa-keyboard"></i></button>
-            <button id="disconnectButton" class="option-button">Disconnect <i class="fas fa-window-close"></i></button>
+            <button id="fileTransferButton" class="option-button">Dateiübertragung <i class="fas fa-file-upload"></i></button>
+            <button id="ctrlAltDelButton" class="option-button">Strg+Alt+Entf <i class="fas fa-sign-in-alt"></i></button>
+            <button id="keyboardButton" hidden="hidden" class="option-button">Tastatur <i class="fas fa-keyboard"></i></button>
+            <button id="disconnectButton" class="option-button">Trennen <i class="fas fa-window-close"></i></button>
         </div>
 
 
         <div class="menu-options-header">
-            View
+            Ansicht
         </div>
 
         <div>
-            <button id="changeScreenButton" class="option-button">Monitors <i class="fas fa-desktop"></i></button>
-            <button id="fitToScreenButton" class="toggled option-button">Fit <i class="fas fa-expand"></i></button>
-            <button id="qualityButton" class="option-button">Quality <i class="far fa-image"></i></button>
+            <button id="changeScreenButton" class="option-button">Monitore <i class="fas fa-desktop"></i></button>
+            <button id="fitToScreenButton" class="toggled option-button">Zoom <i class="fas fa-expand"></i></button>
+            <button id="qualityButton" class="option-button">Qualität <i class="far fa-image"></i></button>
         </div>
 
     </div>
@@ -90,42 +88,42 @@
 
     <div id="qualityBar" class="horizontal-button-bar">
         <div style="color:white; font-size:12px">
-            Image Quality
+            Bild Qualität
         </div>
         <div>
             <input id="qualityRangeInput" value="50" max="100" class="form-control-range" type="range" />
             <div style="color:white; font-size:12px; text-align: left">
                 <input id="autoAdjustQualityCheckBox" type="checkbox" checked />
-                <label>Auto Adjust</label>
+                <label>Automatisch anpassen</label>
             </div>
         </div>
     </div>
 
     <div id="clipboardTransferBar" class="horizontal-button-bar">
         <div style="color:white; font-size:12px">
-            Shared Clipboard
+            Geteilte Zwischenablage
         </div>
         <textarea id="clipboardTransferTextArea"></textarea>
         <div style="color:white; font-size:12px; text-align: left">
             <input id="clipboardTransferTypeCheckbox" type="checkbox" />
-            <label>Type Input</label>
+            <label>Eingabe tippen</label>
         </div>
     </div>
 
     <div id="connectBox">
-        <h3>Connect to a client:</h3>
+        <h3>Verbindung herstellen:</h3>
         <div class="form-block">
-            <label>Your Name (shown to client): </label>
+            <label>Ihr Name (wird dem Anwender angezeigt): </label>
             <br />
-            <input id="nameInput" type="text" />
+            <input id="nameInput" type="text" placeholder="(z.B.: avp-mmustermann)" pattern="(avp-)[a-zA-Z]+" />
         </div>
         <div class="form-block">
-            <label>Session ID: </label>
+            <label>Sitzungsnummer: </label>
             <br />
             <input id="sessionIDInput" type="text" pattern="[0-9 ]+" />
         </div>
         <div class="right-aligned">
-            <button id="connectButton">Connect</button>
+            <button id="connectButton">Verbinden</button>
         </div>
         <div id="statusMessage" class="status-message">
 
@@ -139,15 +137,18 @@
         <textarea id="touchKeyboardTextArea" value=" #"> #</textarea>
     </div>
 
-    <footer>
-        <div class="footer-wrapper">
-            <p>&copy; @DateTime.Now.Year - Translucency Software</p>
-            <p hidden="hidden">
-                <span>File Transfer:</span>
-                <progress id="fileTransferProgress"></progress>
-            </p>
+    <footer class="footer text-muted">
+        <div class="container">
+            <hr />
+            <div class="footer-wrapper">
+                <p>&copy; @DateTime.Now.Year - AvP IT GmbH</p>
+                <p class="text-right">
+                    <a href="https://www.avp.de/impressum.html" target="_blank">Impressum</a> - <a href="https://www.avp.de/datenschutz.html" target="_blank">Datenschutzerklärung</a>
+                </p>
+            </div>
         </div>
     </footer>
+
     <script type="module" src="~/scripts/RemoteControl/Main.js">
     </script>
     <script>

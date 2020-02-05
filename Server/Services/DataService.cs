@@ -349,7 +349,7 @@ namespace Remotely.Server.Services
         {
             var user = RemotelyContext.Users.FirstOrDefault(x => x.UserName == username);
 
-            return RemotelyContext.DeviceGroups.Where(x => x.OrganizationID == user.OrganizationID).ToList();
+            return RemotelyContext.DeviceGroups/*.Where(x => x.OrganizationID == user.OrganizationID)*/.ToList();
         }
 
         public int GetOrganizationCount()

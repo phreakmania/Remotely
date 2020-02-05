@@ -1,0 +1,41 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Remotely.Shared.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Remotely.Server.Services;
+
+namespace Remotely.Server.Pages
+{
+    public class AuthenticatedModel : BaseModel
+    {
+        private DataService DataService { get; }
+        public AuthenticatedModel(DataService dataService)
+        {
+            DataService = dataService;
+        }
+
+        public List<SelectListItem> DeviceGroups { get; set; } = new List<SelectListItem>();
+
+        public void OnGet()
+        {
+            if (User?.Identity?.IsAuthenticated == true)
+            {
+                DefaultPrompt = DataService.GetDefaultPrompt(User.Identity.Name);
+                var groups = DataService.GetDeviceGroupsForUserName(User.Identity.Name);
+                if (groups?.Any() == true)
+                {
+                    DeviceGroups.AddRange(groups.Select(x => new SelectListItem(x.Name, x.ID)));
+                }
+            }
+            else
+            {
+                DefaultPrompt = DataService.GetDefaultPrompt();
+            }
+        }
+    }
+}

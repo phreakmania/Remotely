@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 namespace Remotely.Server.Pages
 {
     [Authorize]
-    public class InviteModel : PageModel
+    public class InviteModel : BaseModel
     {
         public InviteModel(DataService dataService)
         {

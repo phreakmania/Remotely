@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 namespace Remotely.Server.Pages
 {
     [Authorize("RemoteControlPolicy")]
-    public class RemoteControlModel : PageModel
+    public class RemoteControlModel : BaseModel
     {
         public void OnGet()
         {

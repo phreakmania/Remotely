@@ -8,19 +8,21 @@
     <RootNamespace>Remotely.Desktop.Win</RootNamespace>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Description>Desktop client for allowing remote control via the Remotely server.</Description>
-    <Copyright>Copyright ©  2020 Translucency Software</Copyright>
-    <PackageId>Remotely Desktop</PackageId>
-    <Authors>Jared Goodwin</Authors>
-    <Company>Translucency Software</Company>
-    <Product>Remotely Desktop</Product>
-    <PackageProjectUrl>https://remotely.lucency.co</PackageProjectUrl>
+    <Description>AvP QuickSupport</Description>
+    <Copyright>Copyright ©  2020 AvP IT GmbH</Copyright>
+    <PackageId>AvP QuickSupport</PackageId>
+    <Authors>AvP IT GmbH</Authors>
+    <Company>AvP IT GmbH</Company>
+    <Product>AvP QuickSupport</Product>
+    <PackageProjectUrl>https://remote.intern.avp.de</PackageProjectUrl>
     <Platforms>AnyCPU;x86;x64</Platforms>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="favicon.ico" />
     <None Remove="Remotely_Icon.png" />
+    <None Remove="logo.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,6 +37,7 @@
   <ItemGroup>
     <Resource Include="favicon.ico" />
     <Resource Include="Remotely_Icon.png" />
+    <Resource Include="logo.png" />
   </ItemGroup>
 
   <ItemGroup>

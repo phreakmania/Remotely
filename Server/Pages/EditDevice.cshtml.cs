@@ -12,7 +12,7 @@ using Remotely.Server.Services;
 namespace Remotely.Server.Pages
 {
     [Authorize]
-    public class EditDeviceModel : PageModel
+    public class EditDeviceModel : BaseModel
     {
         public EditDeviceModel(DataService dataService)
         {

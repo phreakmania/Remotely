@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Remotely.Server.Pages
 {
-    public class CreditsModel : PageModel
+    public class CreditsModel : BaseModel
     {
         public void OnGet()
         {

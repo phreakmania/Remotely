@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Remotely.Server.Pages
 {
-    public class PrivacyModel : PageModel
+    public class PrivacyModel : BaseModel
     {
         public void OnGet()
         {
